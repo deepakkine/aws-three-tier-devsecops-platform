@@ -42,6 +42,3 @@ node_modules/
 
 # IntelliJ
 .idea/
-
-# Terraform lock
-.terraform.lock.hcl
