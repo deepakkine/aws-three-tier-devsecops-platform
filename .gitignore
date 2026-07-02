@@ -1,0 +1,47 @@
+# Ignore environment files
+**/.env
+
+# Keep example environment files
+!**/.env.example
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+terraform.tfvars
+*.tfvars
+*.tfvars.json
+
+# Local overrides
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Sensitive files
+*.pem
+*.key
+*.crt
+
+# Environment variables
+.env
+# .env.*
+
+# Node
+node_modules/
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# IntelliJ
+.idea/
+
+# Terraform lock
+.terraform.lock.hcl
