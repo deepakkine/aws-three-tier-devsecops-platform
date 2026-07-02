@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "three-tier-devsecops-tfstate-123456789012"
+  bucket = "deepak-aws-three-tier-devsecops-tfstate-848504403730"
 
   tags = {
     Name = "terraform-state"
@@ -15,7 +15,7 @@ resource "aws_s3_bucket_versioning" "terraform_state" {
 }
 
 resource "aws_dynamodb_table" "terraform_lock" {
-  name         = "terraform-lock"
+  name         = "deepak-aws-three-tier-devsecops-tf-lock"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
 
