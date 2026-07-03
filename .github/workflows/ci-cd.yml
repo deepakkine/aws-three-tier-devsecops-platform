@@ -43,8 +43,15 @@ jobs:
 
       - name: Verify AWS Identity
         run: |
-          echo "===== AWS Identity ====="
+          echo "========================"
           aws sts get-caller-identity
+          echo "========================"
+
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
+
+          aws configure list
+
+          aws iam get-user
 
       #################################################
       # Docker Buildx
@@ -130,10 +137,13 @@ jobs:
 
       - name: Test EKS Token
         run: |
-          echo "===== EKS TOKEN ====="
           aws eks get-token \
             --cluster-name $CLUSTER_NAME \
             --region $AWS_REGION
+
+          echo ""
+
+          aws sts get-caller-identity
 
       #################################################
       # Verify Cluster
