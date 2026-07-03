@@ -36,10 +36,10 @@ resource "aws_eks_node_group" "this" {
     aws_eks_cluster.this
   ]
 
-  tags = {
-    Name        = "${var.cluster_name}-node-group"
-    Environment = var.environment
-    ManagedBy   = "Terraform"
-    Project     = var.project_name
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${var.cluster_name}-node-group"
+    }
+  )
 }

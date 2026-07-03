@@ -39,7 +39,10 @@ resource "aws_eks_cluster" "this" {
     aws_iam_role_policy_attachment.eks_vpc_resource_controller,
   ]
 
-  tags = {
-    Name = var.cluster_name
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = var.cluster_name
+    }
+  )
 }

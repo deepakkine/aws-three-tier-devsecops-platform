@@ -3,7 +3,7 @@
 ############################################
 
 resource "aws_iam_role" "eks_cluster" {
-  name = "${var.cluster_name}-cluster-role"
+  name = "${local.name_prefix}-cluster-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -21,9 +21,12 @@ resource "aws_iam_role" "eks_cluster" {
     ]
   })
 
-  tags = {
-    Name = "${var.cluster_name}-cluster-role"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-cluster-role"
+    }
+  )
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
@@ -36,7 +39,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 ############################################
 
 resource "aws_iam_role" "eks_node_group" {
-  name = "${var.cluster_name}-node-role"
+  name = "${local.name_prefix}-node-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -54,9 +57,12 @@ resource "aws_iam_role" "eks_node_group" {
     ]
   })
 
-  tags = {
-    Name = "${var.cluster_name}-node-role"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-node-role"
+    }
+  )
 }
 
 resource "aws_iam_role_policy_attachment" "worker_node_policy" {

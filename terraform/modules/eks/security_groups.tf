@@ -3,13 +3,16 @@
 ############################################
 
 resource "aws_security_group" "eks_cluster" {
-  name        = "${var.cluster_name}-cluster-sg"
+  name        = "${local.name_prefix}-cluster-sg"
   description = "Security group for EKS Control Plane"
   vpc_id      = var.vpc_id
 
-  tags = {
-    Name = "${var.cluster_name}-cluster-sg"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-cluster-sg"
+    }
+  )
 }
 
 ############################################
@@ -17,13 +20,16 @@ resource "aws_security_group" "eks_cluster" {
 ############################################
 
 resource "aws_security_group" "eks_nodes" {
-  name        = "${var.cluster_name}-nodes-sg"
+  name        = "${local.name_prefix}-nodes-sg"
   description = "Security group for EKS Worker Nodes"
   vpc_id      = var.vpc_id
 
-  tags = {
-    Name = "${var.cluster_name}-nodes-sg"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-nodes-sg"
+    }
+  )
 }
 
 ############################################

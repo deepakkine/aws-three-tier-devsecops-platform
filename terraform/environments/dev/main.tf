@@ -1,3 +1,11 @@
+##############################################
+# Terraform Configuration for Dev Environment
+##############################################
+
+###############################################
+# VPC
+###############################################
+
 module "vpc" {
   source = "../../modules/vpc"
 
@@ -11,6 +19,10 @@ module "vpc" {
   private_subnet_cidrs = var.private_subnet_cidrs
   availability_zones   = var.availability_zones
 }
+
+#############################################
+# Amazon EKS
+#############################################
 
 module "eks" {
   source = "../../modules/eks"
@@ -30,4 +42,33 @@ module "eks" {
   desired_size = var.desired_size
   min_size     = var.min_size
   max_size     = var.max_size
+}
+
+#############################################
+# ALB Controller
+#############################################
+
+module "alb_controller" {
+  source = "../../modules/alb-controller"
+
+  cluster_name = module.eks.cluster_name
+
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_issuer
+}
+
+############################################
+# Amazon ECR
+############################################
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  repositories = [
+    "frontend",
+    "backend"
+  ]
 }

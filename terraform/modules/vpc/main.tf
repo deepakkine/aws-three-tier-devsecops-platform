@@ -1,13 +1,23 @@
+############################################
+# VPC
+############################################
+
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-vpc"
-    Environment = var.environment
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-vpc"
+    }
+  )
 }
+
+############################################
+# Public Subnets
+############################################
 
 resource "aws_subnet" "public" {
   count = length(var.public_subnet_cidrs)
@@ -18,10 +28,10 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = merge(
+    local.common_tags,
     {
-      Name = "${var.project_name}-${var.environment}-public-${count.index + 1}"
-      Type = "Public"
-
+      Name                     = "${local.name_prefix}-public-${count.index + 1}"
+      Type                     = "Public"
       "kubernetes.io/role/elb" = "1"
     },
     var.cluster_name != null ? {
@@ -29,6 +39,10 @@ resource "aws_subnet" "public" {
     } : {}
   )
 }
+
+############################################
+# Private Subnets
+############################################
 
 resource "aws_subnet" "private" {
   count = length(var.private_subnet_cidrs)
@@ -38,9 +52,10 @@ resource "aws_subnet" "private" {
   availability_zone = var.availability_zones[count.index]
 
   tags = merge(
+    local.common_tags,
     {
-      Name = "${var.project_name}-${var.environment}-private-${count.index + 1}"
-      Type = "Private"
+      Name                              = "${local.name_prefix}-private-${count.index + 1}"
+      Type                              = "Private"
       "kubernetes.io/role/internal-elb" = "1"
     },
     var.cluster_name != null ? {
@@ -49,34 +64,63 @@ resource "aws_subnet" "private" {
   )
 }
 
+############################################
+# Internet Gateway
+############################################
+
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
 
-  tags = {
-    Name = "${var.project_name}-${var.environment}-igw"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-igw"
+    }
+  )
 }
+
+############################################
+# Elastic IP for NAT Gateway
+############################################
 
 resource "aws_eip" "nat" {
   domain = "vpc"
 
-  tags = {
-    Name = "${var.project_name}-${var.environment}-nat-eip"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-nat-eip"
+    }
+  )
 
-  depends_on = [aws_internet_gateway.this]
+  depends_on = [
+    aws_internet_gateway.this
+  ]
 }
+
+############################################
+# NAT Gateway
+############################################
 
 resource "aws_nat_gateway" "this" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public[0].id
 
-  tags = {
-    Name = "${var.project_name}-${var.environment}-nat"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-nat"
+    }
+  )
 
-  depends_on = [aws_internet_gateway.this]
+  depends_on = [
+    aws_internet_gateway.this
+  ]
 }
+
+############################################
+# Public Route Table
+############################################
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
@@ -86,9 +130,12 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.this.id
   }
 
-  tags = {
-    Name = "${var.project_name}-${var.environment}-public-rt"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-public-rt"
+    }
+  )
 }
 
 resource "aws_route_table_association" "public" {
@@ -98,6 +145,10 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
+############################################
+# Private Route Table
+############################################
+
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
@@ -106,9 +157,12 @@ resource "aws_route_table" "private" {
     nat_gateway_id = aws_nat_gateway.this.id
   }
 
-  tags = {
-    Name = "${var.project_name}-${var.environment}-private-rt"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-private-rt"
+    }
+  )
 }
 
 resource "aws_route_table_association" "private" {
