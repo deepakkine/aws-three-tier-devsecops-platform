@@ -41,6 +41,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Verify AWS Identity
+        run: |
+          echo "===== AWS Identity ====="
+          aws sts get-caller-identity
+
       #################################################
       # Docker Buildx
       #################################################
@@ -115,14 +120,41 @@ jobs:
             --region $AWS_REGION
 
       #################################################
+      # DEBUG
+      #################################################
+
+      - name: Show kubeconfig
+        run: |
+          echo "===== KUBECONFIG ====="
+          cat ~/.kube/config
+
+      - name: Test EKS Token
+        run: |
+          echo "===== EKS TOKEN ====="
+          aws eks get-token \
+            --cluster-name $CLUSTER_NAME \
+            --region $AWS_REGION
+
+      #################################################
       # Verify Cluster
       #################################################
 
       - name: Verify Cluster
         run: |
-          kubectl get nodes
-          kubectl get pods -A
+          echo "===== CURRENT CONTEXT ====="
+          kubectl config current-context
+
+          echo ""
+          echo "===== CONFIG ====="
+          kubectl config view
+
+          echo ""
+          echo "===== HELM VERSION ====="
           helm version
+
+          echo ""
+          echo "===== GET NODES (VERBOSE) ====="
+          kubectl get nodes -v=8
 
       #################################################
       # Deploy
