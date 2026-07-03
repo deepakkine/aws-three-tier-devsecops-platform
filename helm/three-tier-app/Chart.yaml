@@ -1,0 +1,17 @@
+apiVersion: v2
+name: three-tier-app
+description: Helm chart for deploying a three-tier application on Amazon EKS
+type: application
+
+version: 0.1.0
+appVersion: "1.0.0"
+
+keywords:
+  - kubernetes
+  - eks
+  - devops
+  - helm
+  - three-tier
+
+maintainers:
+  - name: Deepak Kine

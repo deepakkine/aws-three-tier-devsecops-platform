@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "three-tier-app.fullname" . }}-mongodb
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "three-tier-app.labels" . | nindent 4 }}
+
+spec:
+  replicas: {{ .Values.mongodb.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: mongodb
+
+  template:
+    metadata:
+      labels:
+        app: mongodb
+
+    spec:
+      containers:
+        - name: mongodb
+
+          image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: {{ .Values.mongodb.service.port }}
+
+          resources:
+            {{- toYaml .Values.resources.mongodb | nindent 12 }}
+
+          volumeMounts:
+            - name: mongodb-storage
+              mountPath: /data/db
+
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.mongodb.service.port }}
+
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.mongodb.service.port }}
+
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+      volumes:
+        - name: mongodb-storage
+          persistentVolumeClaim:
+            claimName: {{ include "three-tier-app.fullname" . }}-mongodb-pvc

@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: {{ include "three-tier-app.fullname" . }}
+  namespace: {{ .Values.namespace }}
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+    - http:
+        paths:
+          # Frontend
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "three-tier-app.fullname" . }}-frontend
+                port:
+                  number: {{ .Values.frontend.service.port }}
+
+          # Backend
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "three-tier-app.fullname" . }}-backend
+                port:
+                  number: {{ .Values.backend.service.port }}

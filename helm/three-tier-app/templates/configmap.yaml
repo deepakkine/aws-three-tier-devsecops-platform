@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "three-tier-app.fullname" . }}-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "three-tier-app.labels" . | nindent 4 }}
+
+data:
+  PORT: "{{ .Values.backend.service.port }}"
+
+  USE_DB_AUTH: "false"
+
+  MONGO_CONN_STR: "mongodb://{{ include "three-tier-app.fullname" . }}-mongodb:27017/tasksdb"

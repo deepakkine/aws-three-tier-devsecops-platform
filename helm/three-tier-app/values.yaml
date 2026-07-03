@@ -1,0 +1,72 @@
+namespace: three-tier-app
+
+frontend:
+  replicaCount: 1
+
+  image:
+    repository: 848504403730.dkr.ecr.ap-south-1.amazonaws.com/aws-three-tier-devsecops-platform-dev-frontend
+    tag: v2
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+
+backend:
+  replicaCount: 1
+
+  image:
+    repository: 848504403730.dkr.ecr.ap-south-1.amazonaws.com/aws-three-tier-devsecops-platform-dev-backend
+    tag: v1
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 3500
+    targetPort: 3500
+
+mongodb:
+  replicaCount: 1
+
+  image:
+    repository: mongo
+    tag: "7.0"
+
+  service:
+    port: 27017
+
+  persistence:
+    enabled: true
+    storageClass: gp2
+    size: 5Gi
+
+ingress:
+  enabled: true
+  className: nginx
+  host: ""
+
+resources:
+  frontend:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+  backend:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+  mongodb:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
