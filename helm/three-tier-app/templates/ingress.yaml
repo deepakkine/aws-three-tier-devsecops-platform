@@ -5,8 +5,16 @@ metadata:
   name: {{ include "three-tier-app.fullname" . }}
   namespace: {{ .Values.namespace }}
 
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
 spec:
   ingressClassName: nginx
+
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: three-tier-app-tls
 
   rules:
     - host: {{ .Values.ingress.host }}
