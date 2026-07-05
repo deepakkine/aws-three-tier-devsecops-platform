@@ -52,3 +52,8 @@ variable "max_size" {
   description = "Maximum node count"
   type        = number
 }
+
+variable "github_actions_user_arn" {
+  description = "GitHub Actions IAM User ARN"
+  type        = string
+}

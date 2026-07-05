@@ -45,3 +45,7 @@ variable "min_size" {
 variable "max_size" {
   type = number
 }
+
+variable "github_actions_user_arn" {
+  type = string
+}
