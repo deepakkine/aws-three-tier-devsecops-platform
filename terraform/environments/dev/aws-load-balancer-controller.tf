@@ -3,6 +3,12 @@
 ############################################
 
 resource "helm_release" "aws_load_balancer_controller" {
+
+  depends_on = [
+    module.eks,
+    module.alb_controller
+  ]
+
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
@@ -12,20 +18,12 @@ resource "helm_release" "aws_load_balancer_controller" {
   create_namespace = false
 
   wait    = true
-  timeout = 300
+  timeout = 600
 
   set = [
     {
       name  = "clusterName"
       value = module.eks.cluster_name
-    },
-    {
-      name  = "serviceAccount.create"
-      value = "false"
-    },
-    {
-      name  = "serviceAccount.name"
-      value = "aws-load-balancer-controller"
     },
     {
       name  = "region"
@@ -34,6 +32,18 @@ resource "helm_release" "aws_load_balancer_controller" {
     {
       name  = "vpcId"
       value = module.vpc.vpc_id
+    },
+    {
+      name  = "serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = "aws-load-balancer-controller"
+    },
+    {
+      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = module.alb_controller.iam_role_arn
     }
   ]
 }
