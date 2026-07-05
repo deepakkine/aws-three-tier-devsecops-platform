@@ -44,7 +44,7 @@ mongodb:
 ingress:
   enabled: true
   className: nginx
-  host: ""
+  host: deepakkine.online
 
 resources:
   frontend:
