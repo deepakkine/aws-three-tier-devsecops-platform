@@ -64,3 +64,8 @@ variable "github_repository" {
   description = "GitHub repository name"
   type        = string
 }
+
+variable "letsencrypt_email" {
+  description = "Email address used by Let's Encrypt"
+  type        = string
+}

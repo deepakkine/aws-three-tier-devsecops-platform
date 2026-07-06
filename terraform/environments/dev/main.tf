@@ -99,6 +99,35 @@ module "cert_manager" {
   namespace = "cert-manager"
 }
 
+#############################################
+# Ingress NGINX
+#############################################
+
+module "ingress_nginx" {
+  source = "../../modules/ingress-nginx"
+
+  namespace = "ingress-nginx"
+
+  depends_on = [
+    module.cert_manager
+  ]
+}
+
+############################################
+# Cluster Issuer
+############################################
+
+module "cluster_issuer" {
+  source = "../../modules/cluster-issuer"
+
+  email = var.letsencrypt_email
+
+  depends_on = [
+    module.cert_manager,
+    module.ingress_nginx
+  ]
+}
+
 ############################################
 # Monitoring
 ############################################
@@ -126,18 +155,4 @@ module "metrics_server" {
   source = "../../modules/metrics-server"
 
   namespace = "kube-system"
-}
-
-#############################################
-# Ingress NGINX
-#############################################
-
-module "ingress_nginx" {
-  source = "../../modules/ingress-nginx"
-
-  namespace = "ingress-nginx"
-
-  depends_on = [
-    module.cert_manager
-  ]
 }
