@@ -74,3 +74,24 @@ module "ecr" {
     "backend"
   ]
 }
+
+############################################
+# Monitoring
+############################################
+
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  namespace = "monitoring"
+
+  alertmanager_email          = var.alertmanager_email
+  alertmanager_email_password = var.alertmanager_email_password
+
+  grafana_admin_password      = "admin123"
+  prometheus_retention        = "7d"
+  grafana_persistence_enabled = false
+
+  depends_on = [
+    helm_release.metrics_server
+  ]
+}
