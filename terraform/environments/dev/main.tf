@@ -76,6 +76,16 @@ module "ecr" {
 }
 
 ############################################
+# Cert Manager
+############################################
+
+module "cert_manager" {
+  source = "../../modules/cert-manager"
+
+  namespace = "cert-manager"
+}
+
+############################################
 # Monitoring
 ############################################
 
@@ -92,7 +102,8 @@ module "monitoring" {
   grafana_persistence_enabled = false
 
   depends_on = [
-    module.metrics_server
+    module.metrics_server,
+    module.cert_manager
   ]
 }
 
