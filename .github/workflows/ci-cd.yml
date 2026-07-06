@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -15,61 +19,73 @@ env:
   FRONTEND_REPOSITORY: aws-three-tier-devsecops-platform-dev-frontend
 
 jobs:
+
+#################################################
+# Build Push Deploy
+#################################################
+
   deploy:
     name: Build Push Deploy
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
 
     env:
       IMAGE_TAG: v${{ github.run_number }}
 
     steps:
 
-      #################################################
-      # Checkout Repository
-      #################################################
+#################################################
+# Checkout
+#################################################
 
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      #################################################
-      # Configure AWS Credentials
-      #################################################
+#################################################
+# Configure AWS Credentials (OIDC)
+#################################################
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: arn:aws:iam::848504403730:role/aws-three-tier-devsecops-platform-dev-github-actions
+          aws-region: ${{ env.AWS_REGION }}
 
-      #################################################
-      # Login to Amazon ECR
-      #################################################
+#################################################
+# Verify AWS Identity
+#################################################
+
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
+
+#################################################
+# Login to Amazon ECR
+#################################################
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      #################################################
-      # Setup Docker Buildx
-      #################################################
+#################################################
+# Docker Buildx
+#################################################
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      #################################################
-      # Image Version
-      #################################################
+#################################################
+# Docker Cache
+#################################################
 
-      - name: Show Image Version
-        run: |
-          echo "IMAGE_TAG=$IMAGE_TAG"
+      - name: Docker Cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
-      #################################################
-      # Trivy Backend Filesystem Scan
-      #################################################
+#################################################
+# Trivy Backend Filesystem Scan
+#################################################
 
       - name: Trivy Backend Filesystem Scan
         uses: aquasecurity/trivy-action@master
@@ -80,9 +96,9 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 0
 
-      #################################################
-      # Trivy Frontend Filesystem Scan
-      #################################################
+#################################################
+# Trivy Frontend Filesystem Scan
+#################################################
 
       - name: Trivy Frontend Filesystem Scan
         uses: aquasecurity/trivy-action@master
@@ -93,48 +109,48 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 0
 
-      #################################################
-      # Build Backend Image
-      #################################################
+#################################################
+# Build Backend
+#################################################
 
-      - name: Build Backend Image
+      - name: Build Backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./app/backend
+          push: true
+          tags: |
+            ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.BACKEND_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+#################################################
+# Build Frontend
+#################################################
+
+      - name: Build Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./app/frontend
+          push: true
+          build-args: |
+            REACT_APP_BACKEND_URL=/api/tasks
+          tags: |
+            ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.FRONTEND_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+#################################################
+# Move Docker Cache
+#################################################
+
+      - name: Update Docker Cache
         run: |
-          docker build \
-            -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$BACKEND_REPOSITORY:$IMAGE_TAG \
-            ./app/backend
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-      #################################################
-      # Push Backend Image
-      #################################################
-
-      - name: Push Backend Image
-        run: |
-          docker push \
-            $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$BACKEND_REPOSITORY:$IMAGE_TAG
-
-      #################################################
-      # Build Frontend Image
-      #################################################
-
-      - name: Build Frontend Image
-        run: |
-          docker build \
-            --build-arg REACT_APP_BACKEND_URL=/api/tasks \
-            -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$FRONTEND_REPOSITORY:$IMAGE_TAG \
-            ./app/frontend
-
-      #################################################
-      # Push Frontend Image
-      #################################################
-
-      - name: Push Frontend Image
-        run: |
-          docker push \
-            $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$FRONTEND_REPOSITORY:$IMAGE_TAG
-
-      #################################################
-      # Trivy Backend Image Scan
-      #################################################
+#################################################
+# Trivy Backend Image Scan
+#################################################
 
       - name: Trivy Backend Image Scan
         uses: aquasecurity/trivy-action@master
@@ -144,9 +160,9 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 0
 
-      #################################################
-      # Trivy Frontend Image Scan
-      #################################################
+#################################################
+# Trivy Frontend Image Scan
+#################################################
 
       - name: Trivy Frontend Image Scan
         uses: aquasecurity/trivy-action@master
@@ -156,27 +172,23 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 0
 
-      #################################################
-      # Setup kubectl
-      #################################################
+#################################################
+# kubectl
+#################################################
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
-        with:
-          version: latest
 
-      #################################################
-      # Setup Helm
-      #################################################
+#################################################
+# Helm
+#################################################
 
       - name: Setup Helm
         uses: azure/setup-helm@v4
-        with:
-          version: latest
 
-      #################################################
-      # Configure kubeconfig
-      #################################################
+#################################################
+# kubeconfig
+#################################################
 
       - name: Configure kubeconfig
         run: |
@@ -184,9 +196,9 @@ jobs:
             --name $CLUSTER_NAME \
             --region $AWS_REGION
 
-      #################################################
-      # Verify Cluster
-      #################################################
+#################################################
+# Verify Cluster
+#################################################
 
       - name: Verify Cluster
         run: |
@@ -194,9 +206,9 @@ jobs:
           kubectl get pods -A
           helm version
 
-      #################################################
-      # Deploy Application
-      #################################################
+#################################################
+# Deploy Application
+#################################################
 
       - name: Deploy Application
         run: |
@@ -208,37 +220,31 @@ jobs:
             --set backend.image.tag=$IMAGE_TAG \
             --set frontend.image.tag=$IMAGE_TAG
 
-      #################################################
-      # Verify Rollout
-      #################################################
+#################################################
+# Verify Rollout
+#################################################
 
       - name: Verify Deployment
         run: |
-          kubectl rollout status deployment/three-tier-app-three-tier-app-backend \
-            -n three-tier-app --timeout=5m
+          kubectl rollout status deployment/three-tier-app-three-tier-app-backend -n three-tier-app --timeout=5m
+          kubectl rollout status deployment/three-tier-app-three-tier-app-frontend -n three-tier-app --timeout=5m
+          kubectl rollout status deployment/three-tier-app-three-tier-app-mongodb -n three-tier-app --timeout=5m
 
-          kubectl rollout status deployment/three-tier-app-three-tier-app-frontend \
-            -n three-tier-app --timeout=5m
-
-          kubectl rollout status deployment/three-tier-app-three-tier-app-mongodb \
-            -n three-tier-app --timeout=5m
-
-      #################################################
-      # Kubernetes Resources
-      #################################################
+#################################################
+# Resources
+#################################################
 
       - name: Kubernetes Resources
         run: |
           kubectl get all -n three-tier-app
           kubectl get ingress -n three-tier-app
 
-      #################################################
-      # Deployment Summary
-      #################################################
+#################################################
+# Summary
+#################################################
 
       - name: Deployment Summary
         run: |
-          echo "Deployment completed successfully."
-          echo "Image Version : $IMAGE_TAG"
-          echo "Backend Image : $BACKEND_REPOSITORY:$IMAGE_TAG"
-          echo "Frontend Image: $FRONTEND_REPOSITORY:$IMAGE_TAG"
+          echo "Deployment Successful"
+          echo "Backend : $BACKEND_REPOSITORY:$IMAGE_TAG"
+          echo "Frontend: $FRONTEND_REPOSITORY:$IMAGE_TAG"
