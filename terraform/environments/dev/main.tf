@@ -103,7 +103,8 @@ module "monitoring" {
 
   depends_on = [
     module.metrics_server,
-    module.cert_manager
+    module.cert_manager,
+    module.ingress_nginx
   ]
 }
 
@@ -111,4 +112,18 @@ module "metrics_server" {
   source = "../../modules/metrics-server"
 
   namespace = "kube-system"
+}
+
+#############################################
+# Ingress NGINX
+#############################################
+
+module "ingress_nginx" {
+  source = "../../modules/ingress-nginx"
+
+  namespace = "ingress-nginx"
+
+  depends_on = [
+    module.cert_manager
+  ]
 }
