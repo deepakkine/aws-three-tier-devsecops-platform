@@ -92,6 +92,12 @@ module "monitoring" {
   grafana_persistence_enabled = false
 
   depends_on = [
-    helm_release.metrics_server
+    module.metrics_server
   ]
+}
+
+module "metrics_server" {
+  source = "../../modules/metrics-server"
+
+  namespace = "kube-system"
 }
