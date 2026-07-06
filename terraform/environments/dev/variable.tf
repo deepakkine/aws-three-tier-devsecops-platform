@@ -49,3 +49,12 @@ variable "max_size" {
 variable "github_actions_user_arn" {
   type = string
 }
+
+variable "alertmanager_email" {
+  type = string
+}
+
+variable "alertmanager_email_password" {
+  type      = string
+  sensitive = true
+}

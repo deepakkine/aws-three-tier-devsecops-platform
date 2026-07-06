@@ -1,0 +1,43 @@
+resource "helm_release" "loki" {
+  name       = "loki"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "loki"
+  version    = "5.48.0"
+
+  namespace        = "monitoring"
+  create_namespace = false
+
+  wait    = true
+  timeout = 600
+
+  set = [
+    {
+      name  = "loki.auth_enabled"
+      value = "false"
+    },
+    {
+      name  = "singleBinary.replicas"
+      value = "1"
+    },
+    {
+      name  = "deploymentMode"
+      value = "SingleBinary"
+    },
+    {
+      name  = "minio.enabled"
+      value = "true"
+    },
+    {
+      name  = "persistence.enabled"
+      value = "true"
+    },
+    {
+      name  = "persistence.storageClassName"
+      value = "gp2"
+    },
+    {
+      name  = "persistence.size"
+      value = "10Gi"
+    }
+  ]
+}

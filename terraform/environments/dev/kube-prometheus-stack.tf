@@ -14,6 +14,13 @@ resource "helm_release" "kube_prometheus_stack" {
   wait    = true
   timeout = 900
 
+  values = [
+    templatefile("${path.module}/alertmanager-values.yaml.tpl", {
+      alertmanager_email          = var.alertmanager_email
+      alertmanager_email_password = var.alertmanager_email_password
+    })
+  ]
+
   set = [
     {
       name  = "grafana.adminPassword"
