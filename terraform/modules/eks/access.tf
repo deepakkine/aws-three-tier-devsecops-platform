@@ -4,7 +4,7 @@
 
 resource "aws_eks_access_entry" "github_actions" {
   cluster_name  = aws_eks_cluster.this.name
-  principal_arn = var.github_actions_user_arn
+  principal_arn = var.github_actions_role_arn
   type          = "STANDARD"
 }
 

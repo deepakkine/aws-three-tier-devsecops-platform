@@ -43,7 +43,7 @@ module "eks" {
   min_size     = var.min_size
   max_size     = var.max_size
 
-  github_actions_user_arn = var.github_actions_user_arn
+  github_actions_role_arn = module.github_oidc.role_arn
 }
 
 #############################################
@@ -73,6 +73,20 @@ module "ecr" {
     "frontend",
     "backend"
   ]
+}
+
+############################################
+# GitHub OIDC
+############################################
+
+module "github_oidc" {
+  source = "../../modules/github-oidc"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  github_owner      = var.github_owner
+  github_repository = var.github_repository
 }
 
 ############################################

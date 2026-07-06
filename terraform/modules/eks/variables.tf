@@ -53,7 +53,7 @@ variable "max_size" {
   type        = number
 }
 
-variable "github_actions_user_arn" {
-  description = "GitHub Actions IAM User ARN"
+variable "github_actions_role_arn" {
+  description = "GitHub Actions IAM Role ARN"
   type        = string
 }

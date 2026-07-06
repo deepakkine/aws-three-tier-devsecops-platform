@@ -46,10 +46,6 @@ variable "max_size" {
   type = number
 }
 
-variable "github_actions_user_arn" {
-  type = string
-}
-
 variable "alertmanager_email" {
   type = string
 }
@@ -57,4 +53,14 @@ variable "alertmanager_email" {
 variable "alertmanager_email_password" {
   type      = string
   sensitive = true
+}
+
+variable "github_owner" {
+  description = "GitHub username or organization"
+  type        = string
+}
+
+variable "github_repository" {
+  description = "GitHub repository name"
+  type        = string
 }
