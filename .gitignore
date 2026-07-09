@@ -1,46 +1,69 @@
-# Ignore environment files
+# -----------------------------
+# Environment Files
+# -----------------------------
 **/.env
-
-# Keep example environment files
 !**/.env.example
 
+# -----------------------------
 # Terraform
-**/.terraform/*
+# -----------------------------
+**/.terraform/
 *.tfstate
 *.tfstate.*
+*.tfplan
 crash.log
+
 terraform.tfvars
 *.tfvars
 *.tfvars.json
 
-# Local overrides
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
 
-# Sensitive files
+# -----------------------------
+# Certificates & Secrets
+# -----------------------------
 *.pem
 *.key
 *.crt
 
-# Environment variables
-.env
-# .env.*
-
+# -----------------------------
 # Node
+# -----------------------------
 node_modules/
 
+# -----------------------------
+# Helm
+# -----------------------------
+*.tgz
+
+# -----------------------------
 # Logs
+# -----------------------------
 *.log
 
-# macOS
+# -----------------------------
+# Python
+# -----------------------------
+__pycache__/
+*.pyc
+
+# -----------------------------
+# Editors
+# -----------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -----------------------------
+# OS
+# -----------------------------
 .DS_Store
 
-# VS Code
-.vscode/
-
-# IntelliJ
-.idea/
-
-*.tfplan
+# -----------------------------
+# Backup Files
+# -----------------------------
+*.bak
