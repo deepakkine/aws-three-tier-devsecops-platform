@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - main
+    paths:
+      - ".github/workflows/**"
+      - "app/**"
+      - "helm/**"
+      - "terraform/**"
+      - "monitoring/**"
+      - "security/**"
+      - "docker-compose.yml"
 
 concurrency:
   group: deploy-main
