@@ -6,6 +6,7 @@
 ![Helm](https://img.shields.io/badge/Helm-v3-0F1689?logo=helm)
 ![Docker](https://img.shields.io/badge/Docker-Containers-2496ED?logo=docker)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI/CD-2088FF?logo=githubactions)
+![GNU Make](https://img.shields.io/badge/GNU_Make-427819?style=for-the-badge&logo=gnu&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C?logo=prometheus)
 ![Grafana](https://img.shields.io/badge/Grafana-Dashboards-F46800?logo=grafana)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -1419,6 +1420,14 @@ Planned improvements include:
 > Backend and Frontend Docker images stored in Amazon ECR.
 
 ![Amazon ECR](docs/screenshots/ecr.png)
+
+---
+
+## 🛠️ Makefile Automation
+
+The project includes a Makefile that automates common Terraform, Kubernetes, Helm, Docker, and Git operations.
+
+![Makefile Help](docs/screenshots/Makefile_Help_Output_AWS_Three_Tier_DevSecOps_Platform.png)
 
 ---
 
